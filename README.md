@@ -3,199 +3,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>WealthWise Global | Premium Investment Platform</title>
+    <title>WealthWise Global | Invest & Grow</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #0f172a; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-        .neon-border { border-left: 4px solid #3b82f6; }
-        .animate-slide { animation: slide 20s linear infinite; }
-        @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0b0f1a; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-grad { background: linear-gradient(90deg, #3b82f6, #2563eb); }
     </style>
 </head>
-<body class="text-white overflow-x-hidden">
+<body>
 
-    <div class="bg-blue-600 py-1 overflow-hidden whitespace-nowrap text-[10px] font-bold uppercase tracking-widest">
-        <div class="animate-slide inline-block">
-            🚀 Bitcoin hitting new highs! • PKR/USD: 278.40 • Gold Stable • UAE Real Estate Growth • Invest now for 25% Monthly Returns!
-        </div>
-    </div>
-
-    <nav class="p-5 flex justify-between items-center glass sticky top-0 z-[100]">
-        <h1 class="text-2xl font-black italic text-blue-500">WEALTH<span class="text-white">WISE</span></h1>
-        <div class="flex items-center gap-4">
-            <select id="currSelect" onchange="syncCurrency()" class="bg-gray-800 text-xs p-2 rounded border border-gray-600">
-                <option value="PKR">PKR (₨)</option>
-                <option value="USD">USD ($)</option>
-                <option value="AED">AED (د.إ)</option>
-                <option value="INR">INR (₹)</option>
-            </select>
-            <button onclick="toggleAdmin()" class="opacity-20 hover:opacity-100 text-[10px]">ADMIN</button>
-        </div>
+    <nav class="p-5 flex justify-between items-center glass sticky top-0 z-50">
+        <h1 class="text-2xl font-black text-blue-500 italic uppercase">WealthWise</h1>
+        <select id="curr" onchange="updateUI()" class="bg-gray-800 text-xs p-2 rounded border border-gray-600 outline-none">
+            <option value="PKR">PKR (₨)</option>
+            <option value="USD">USD ($)</option>
+            <option value="AED">AED (د.إ)</option>
+        </select>
     </nav>
 
-    <main class="max-w-6xl mx-auto p-6">
-        
-        <div class="grid lg:grid-cols-3 gap-6 mt-4">
-            <div class="lg:col-span-2 glass p-8 rounded-[2.5rem] relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl font-black">ACTIVE</div>
-                <p class="text-blue-400 font-semibold mb-2 uppercase text-xs tracking-widest">Total Portfolio</p>
-                <h2 class="text-5xl font-black mb-6" id="mainBal">₨ 150,000</h2>
-                <div class="flex gap-4">
-                    <button onclick="openModal('deposit')" class="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-2xl font-bold shadow-lg transition-all">Add Cash</button>
-                    <button onclick="openModal('withdraw')" class="bg-gray-800 hover:bg-gray-700 px-8 py-3 rounded-2xl font-bold border border-gray-600 transition-all">Withdraw</button>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="glass p-6 rounded-3xl neon-border">
-                    <p class="text-gray-400 text-xs">Profit Earned</p>
-                    <h3 class="text-2xl font-bold text-green-400">+ <span id="profitAmt">₨ 12,400</span></h3>
-                </div>
-                <div class="glass p-6 rounded-3xl border-l-4 border-purple-500">
-                    <p class="text-gray-400 text-xs">Total Withdrawals</p>
-                    <h3 class="text-2xl font-bold">₨ 5,000</h3>
-                </div>
+    <main class="max-w-4xl mx-auto p-6 mt-4">
+        <div class="glass p-10 rounded-[2.5rem] border-l-8 border-blue-600 shadow-2xl mb-10">
+            <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Active Balance</p>
+            <h2 class="text-6xl font-black mt-2" id="mainBal">₨ 0.00</h2>
+            <div class="mt-8 flex gap-4">
+                <button onclick="openDeposit()" class="btn-grad px-10 py-4 rounded-2xl font-black shadow-lg hover:scale-105 transition">DEPOSIT</button>
+                <button onclick="alert('Withdrawals are processed every Sunday.')" class="bg-white/5 border border-white/10 px-10 py-4 rounded-2xl font-black hover:bg-white/10 transition">WITHDRAW</button>
             </div>
         </div>
 
-        <h3 class="text-2xl font-black mt-12 mb-8 uppercase italic">Premium Plans</h3>
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="glass p-8 rounded-[2rem] hover:scale-105 transition-transform border-b-4 border-blue-500">
-                <h4 class="text-xl font-bold">Standard</h4>
-                <div class="my-4">
-                    <span class="text-4xl font-black">12%</span>
-                    <span class="text-gray-400">/ 10 Days</span>
-                </div>
-                <ul class="text-sm text-gray-400 space-y-2 mb-8">
-                    <li>✓ Min: <span class="minAmt">₨ 1,000</span></li>
-                    <li>✓ 24/7 Support</li>
-                    <li>✓ Instant Payout</li>
-                </ul>
-                <button onclick="invest('Standard')" class="w-full py-4 bg-blue-600/20 text-blue-400 rounded-2xl font-bold hover:bg-blue-600 hover:text-white transition-all">Select Plan</button>
+        <h3 class="text-2xl font-black mb-6 italic">INVESTMENT PLANS</h3>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="glass p-8 rounded-3xl border-b-4 border-blue-500">
+                <h4 class="text-xl font-bold">Silver Plan</h4>
+                <p class="text-3xl font-black text-green-400 my-2">15% Profit</p>
+                <p class="text-gray-400 text-sm">Duration: 7 Days</p>
+                <button onclick="openDeposit()" class="w-full mt-6 py-3 bg-gray-800 rounded-xl font-bold hover:bg-blue-600 transition">Start Now</button>
             </div>
-
-            <div class="glass p-8 rounded-[2rem] border-2 border-blue-500 relative">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-[10px] font-black px-4 py-1 rounded-full uppercase">Most Popular</div>
-                <h4 class="text-xl font-bold">VIP Growth</h4>
-                <div class="my-4">
-                    <span class="text-4xl font-black">30%</span>
-                    <span class="text-gray-400">/ 20 Days</span>
-                </div>
-                <ul class="text-sm text-gray-400 space-y-2 mb-8">
-                    <li>✓ Min: <span class="minAmt">₨ 10,000</span></li>
-                    <li>✓ Personal Manager</li>
-                    <li>✓ Bonus Rewards</li>
-                </ul>
-                <button onclick="invest('VIP')" class="w-full py-4 bg-blue-600 rounded-2xl font-bold hover:bg-blue-700 shadow-xl shadow-blue-900/40">Select Plan</button>
-            </div>
-
-            <div class="glass p-8 rounded-[2rem] border-b-4 border-purple-500">
-                <h4 class="text-xl font-bold">Elite Fortune</h4>
-                <div class="my-4">
-                    <span class="text-4xl font-black">60%</span>
-                    <span class="text-gray-400">/ 45 Days</span>
-                </div>
-                <ul class="text-sm text-gray-400 space-y-2 mb-8">
-                    <li>✓ Min: <span class="minAmt">₨ 50,000</span></li>
-                    <li>✓ Compounding Interest</li>
-                    <li>✓ Luxury Rewards</li>
-                </ul>
-                <button onclick="invest('Elite')" class="w-full py-4 bg-purple-600/20 text-purple-400 rounded-2xl font-bold hover:bg-purple-600 hover:text-white transition-all">Select Plan</button>
+            <div class="glass p-8 rounded-3xl border-b-4 border-yellow-500">
+                <h4 class="text-xl font-bold">Gold VIP</h4>
+                <p class="text-3xl font-black text-green-400 my-2">40% Profit</p>
+                <p class="text-gray-400 text-sm">Duration: 15 Days</p>
+                <button onclick="openDeposit()" class="w-full mt-6 py-3 bg-gray-800 rounded-xl font-bold hover:bg-yellow-600 transition">Start Now</button>
             </div>
         </div>
     </main>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4">
-        <div class="glass max-w-md w-full p-8 rounded-[2.5rem] border border-blue-500/30">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4">Deposit</h2>
+    <div id="depositModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-4 z-[100]">
+        <div class="glass max-w-md w-full p-8 rounded-[2rem] border-blue-500/50 border shadow-2xl">
+            <h2 class="text-2xl font-black mb-6">SELECT PAYMENT METHOD</h2>
+            
             <div class="space-y-4">
-                <input type="number" id="modalInput" placeholder="Enter Amount" class="w-full bg-gray-900 p-4 rounded-xl border border-gray-700 outline-none focus:border-blue-500">
-                <p id="modalNote" class="text-xs text-gray-500 italic">Submit the request, our team will contact you for payment details.</p>
-                <button onclick="submitAction()" class="w-full bg-blue-600 py-4 rounded-xl font-bold">Submit Request</button>
-                <button onclick="closeModal()" class="w-full text-gray-400 text-sm">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="adminPanel" class="hidden fixed inset-0 bg-gray-950 z-[300] p-10 overflow-y-auto">
-        <div class="flex justify-between mb-10">
-            <h2 class="text-4xl font-black text-red-600">ADMIN CONTROL</h2>
-            <button onclick="toggleAdmin()" class="bg-red-600 px-6 py-2 rounded-lg">Exit Admin</button>
-        </div>
-        <div class="grid md:grid-cols-2 gap-10">
-            <div class="glass p-6 rounded-2xl">
-                <h3 class="text-xl mb-4 font-bold border-b border-gray-800 pb-2">Pending Deposits</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center bg-gray-900 p-4 rounded-lg">
-                        <span>User_442 (₨ 25,000)</span>
-                        <button class="bg-green-600 px-4 py-1 rounded text-xs">Approve</button>
+                <div class="bg-red-600/10 border border-red-600/30 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <p class="text-red-500 font-bold text-sm uppercase">JazzCash</p>
+                        <p class="text-lg font-black tracking-widest">03705519562</p>
                     </div>
+                    <button onclick="copy('03705519562')" class="text-xs bg-red-600 px-3 py-1 rounded-lg">Copy</button>
                 </div>
-            </div>
-            <div class="glass p-6 rounded-2xl">
-                <h3 class="text-xl mb-4 font-bold border-b border-gray-800 pb-2">User Stats</h3>
-                <p>Total Users: 1,240</p>
-                <p>Total Assets: ₨ 4.2M</p>
+
+                <div class="bg-green-600/10 border border-green-600/30 p-4 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <p class="text-green-500 font-bold text-sm uppercase">EasyPaisa</p>
+                        <p class="text-lg font-black tracking-widest">03379827882</p>
+                    </div>
+                    <button onclick="copy('03379827882')" class="text-xs bg-green-600 px-3 py-1 rounded-lg">Copy</button>
+                </div>
+
+                <div class="mt-8">
+                    <p class="text-xs text-gray-400 mb-4 italic">Payment bhenjne ke baad screenshot niche button par click karke WhatsApp karein.</p>
+                    <a href="https://wa.me/923379827882?text=I%20have%20sent%20payment.%20Please%20approve%20my%20deposit." target="_blank" class="block text-center w-full bg-green-600 py-4 rounded-xl font-black text-white hover:bg-green-700 transition">SEND SCREENSHOT (WHATSAPP)</a>
+                    <button onclick="closeDeposit()" class="w-full mt-4 text-gray-500 text-sm">Close</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const data = {
-            rates: { PKR: 1, USD: 0.0036, AED: 0.013, INR: 0.30 },
-            symbols: { PKR: "₨", USD: "$", AED: "د.إ", INR: "₹" },
-            bal: 150000,
-            profit: 12400
-        };
+        const rates = { PKR: 1, USD: 0.0036, AED: 0.013 };
+        const syms = { PKR: "₨", USD: "$", AED: "د.إ" };
+        let bal = 0;
 
-        function syncCurrency() {
-            const c = document.getElementById('currSelect').value;
-            const sym = data.symbols[c];
-            const rate = data.rates[c];
-
-            document.getElementById('mainBal').innerText = sym + " " + (data.bal * rate).toLocaleString();
-            document.getElementById('profitAmt').innerText = sym + " " + (data.profit * rate).toLocaleString();
-            
-            // Update Plan Mins
-            const mins = { Standard: 1000, VIP: 10000, Elite: 50000 };
-            const minEls = document.querySelectorAll('.minAmt');
-            minEls[0].innerText = sym + " " + (1000 * rate).toLocaleString();
-            minEls[1].innerText = sym + " " + (10000 * rate).toLocaleString();
-            minEls[2].innerText = sym + " " + (50000 * rate).toLocaleString();
+        function updateUI() {
+            const c = document.getElementById('curr').value;
+            document.getElementById('mainBal').innerText = syms[c] + " " + (bal * rates[c]).toLocaleString();
         }
 
-        function openModal(type) {
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modalTitle').innerText = type.toUpperCase();
+        function openDeposit() { document.getElementById('depositModal').classList.remove('hidden'); }
+        function closeDeposit() { document.getElementById('depositModal').classList.add('hidden'); }
+        
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            alert("Number copied: " + text);
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
-        function submitAction() {
-            alert("Request Registered! Admin will update your balance within 2 hours.");
-            closeModal();
-        }
-
-        function invest(plan) {
-            if(confirm("Join " + plan + " plan?")) {
-                alert("Investment started successfully!");
-            }
-        }
-
-        function toggleAdmin() {
-            const p = document.getElementById('adminPanel');
-            p.classList.toggle('hidden');
-        }
-
-        // Secret Admin Key: Ctrl+Shift+A
+        // Admin Secret: Ctrl + Shift + Enter to add fake balance for demo
         window.addEventListener('keydown', (e) => {
-            if(e.ctrlKey && e.shiftKey && e.key === 'A') {
-                toggleAdmin();
+            if(e.ctrlKey && e.shiftKey && e.key === 'Enter') {
+                bal = prompt("Enter new balance amount:");
+                updateUI();
             }
         });
-
-        syncCurrency(); // Initialize
     </script>
 </body>
 </html>

@@ -92,9 +92,10 @@
                 <h3 class="font-black text-blue-500 mb-8 uppercase text-sm">Capital Funding</h3>
                 <div class="space-y-3 mb-10 text-[10px] font-black">
                     <div class="glass p-5 rounded-2xl flex justify-between"><span>JAZZCASH</span><span>03705519562</span></div>
-                    <div class="glass p-5 rounded-2xl flex justify-between"><span>EASYPAISA</span><span>03705519562</span></div>
+                    <div class="glass p-5 rounded-2xl flex justify-between"><span>EASYPAISA</span><span>03379827882</span></div>
                 </div>
-                <input type="number" id="dep-amount" placeholder="Amount (PKR)" class="w-full bg-white/5 p-5 rounded-2xl mb-3 text-center font-bold">
+class="glass p-5 rounded-2xl flex justify-between"><span>SADAPAY</span><span>03705519562</span></div>
+                    <div                 <input type="number" id="dep-amount" placeholder="Amount (PKR)" class="w-full bg-white/5 p-5 rounded-2xl mb-3 text-center font-bold">
                 <input type="text" id="dep-trx" placeholder="Transaction ID (TID)" class="w-full bg-white/5 p-5 rounded-2xl mb-8 text-center font-bold uppercase">
                 <button onclick="submitDeposit()" class="w-full bg-blue-600 py-6 rounded-2xl font-black text-[10px] uppercase">Verify Funding</button>
             </div>

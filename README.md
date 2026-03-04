@@ -3,14 +3,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MINTCRESTGOLD | Dashboard</title>
-
-<!-- Firebase SDK -->
+<script src="https://cdn.tailwindcss.com"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDt3ChZHyDdtM4Ir1oXRZJUywcOiV30Wtg",
   authDomain: "investment-84f4e.firebaseapp.com",
@@ -21,266 +18,201 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-let currentUser = null;
-let adminClicks = 0;
-let promoCodeApplied = false;
+let currentUser=null, adminClicks=0, promoApplied=false;
 
-// Plans setup
-const plans = [];
-for(let i=1;i<=20;i++) plans.push({name:"Starter "+i,price:i*200,dailyProfit:3+(i*0.2)});
-plans.push({name:"Elite 1",price:5000,dailyProfit:10});
-plans.push({name:"Elite 2",price:8000,dailyProfit:12});
-plans.push({name:"Elite 3",price:12000,dailyProfit:15});
+// Plans
+const plans=[];
+for(let i=1;i<=20;i++) plans.push({name:"Plan "+i,price:200*i,daily:3+(i*0.2)});
 
 // Login
-window.login = async function(){
-  const name = document.getElementById("username").value.trim().toUpperCase();
-  if(!name) return alert("Enter username");
-  currentUser = name;
-  const userRef = doc(db,"users",name);
-  const docSnap = await getDoc(userRef);
-  if(!docSnap.exists()){
-    await setDoc(userRef,{balance:0,activePlan:null,planExpiry:null,lastProfit:0,referrals:0,redeemedCodes:[]});
+window.login=async function(){
+  const name=document.getElementById("username").value.trim().toUpperCase();
+  if(!name)return alert("Enter username");
+  currentUser=name;
+  const uRef=doc(db,"users",name);
+  const uSnap=await getDoc(uRef);
+  if(!uSnap.exists()){
+    await setDoc(uRef,{balance:0,activePlan:null,lastProfit:0,redeemedCodes:[]});
   }
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("appBox").style.display="block";
-  loadUserData();
-  renderPlans();
-  syncBroadcast();
-};
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("appBox").classList.remove("hidden");
+  loadUserData(); renderPlans(); syncBroadcast(); loadActivity();
+}
 
-// Load user data
+// Load User Data
 async function loadUserData(){
-  const userRef = doc(db,"users",currentUser);
-  onSnapshot(userRef,docSnap=>{
-    const data=docSnap.data();
-    document.getElementById("balance").innerText="₨ "+data.balance;
-    document.getElementById("activePlan").innerText=data.activePlan?`Active: ${data.activePlan} | Expiry: ${new Date(data.planExpiry).toLocaleDateString()}`:"No Active Plan";
-    startProfitCountdown(data.planExpiry,data.lastProfit);
-    promoCodeApplied = data.redeemedCodes && data.redeemedCodes.length>0;
+  const uRef=doc(db,"users",currentUser);
+  onSnapshot(uRef,docSnap=>{
+    const d=docSnap.data();
+    document.getElementById("balance").innerText="₨ "+d.balance;
+    document.getElementById("activePlan").innerText=d.activePlan?`Active: ${d.activePlan}`:"No Active Plan";
+    promoApplied=d.redeemedCodes && d.redeemedCodes.length>0;
   });
 }
 
 // Render Plans
-window.renderPlans = function(){
-  const container = document.getElementById("plans");
-  container.innerHTML = "";
+window.renderPlans=function(){
+  const container=document.getElementById("plans");
+  container.innerHTML="";
   plans.forEach(p=>{
-    const div = document.createElement("div");
-    div.className="card mb-2 flex justify-between items-center";
-    div.innerHTML=`<span>${p.name} (${p.dailyProfit}% daily)</span><button onclick="buyPlan('${p.name}',${p.price},${p.dailyProfit})" class="bg-blue-600 px-2 text-xs">₨ ${p.price}</button>`;
+    const div=document.createElement("div");
+    div.className="bg-white/5 rounded-xl p-4 mb-2 flex justify-between items-center hover:bg-blue-600/10 transition";
+    div.innerHTML=`<span>${p.name} (${p.daily}% daily)</span><button onclick="buyPlan('${p.name}',${p.price},${p.daily})" class="bg-blue-600 px-3 py-1 rounded-xl text-xs">₨ ${p.price}</button>`;
     container.appendChild(div);
   });
 }
 
 // Buy Plan
-window.buyPlan=async function(name,price,dailyProfit){
-  await addDoc(collection(db,"requests"),{
-    user:currentUser,
-    type:"PLAN",
-    planName:name,
-    amount:price,
-    dailyProfit:dailyProfit,
-    status:"pending",
-    time:Date.now()
-  });
-  alert("Plan Request Sent to Admin");
+window.buyPlan=async function(name,price,daily){
+  await addDoc(collection(db,"requests"),{user:currentUser,type:"PLAN",planName:name,amount:price,daily:daily,status:"pending",time:Date.now()});
+  alert("Plan request sent to admin!");
 }
 
 // Deposit
-window.deposit = async function(){
-  const amt = parseInt(document.getElementById("depAmount").value);
-  const method = document.getElementById("depMethod").value;
-  const tid = document.getElementById("depTid").value;
-  const file = document.getElementById("depProof").files[0];
-  if(!amt||!method||!tid||!file) return alert("Fill all fields");
-  const storageRef = sRef(storage,`depositProofs/${currentUser}_${Date.now()}_${file.name}`);
-  await uploadBytes(storageRef,file);
-  const url = await getDownloadURL(storageRef);
-  await addDoc(collection(db,"requests"),{
-    user:currentUser,
-    type:"DEPOSIT",
-    amount:amt,
-    method:method,
-    tid:tid,
-    proof:url,
-    status:"pending",
-    time:Date.now()
-  });
-  alert("Deposit Request Sent to Admin");
+window.deposit=async function(){
+  const amt=parseInt(document.getElementById("depAmount").value);
+  const method=document.getElementById("depMethod").value;
+  const tid=document.getElementById("depTid").value;
+  if(!amt||!method||!tid)return alert("Fill all fields");
+  await addDoc(collection(db,"requests"),{user:currentUser,type:"DEPOSIT",amount:amt,method:method,tid:tid,status:"pending",time:Date.now()});
+  alert("Deposit request sent!");
 }
 
 // Withdraw
 window.withdraw=async function(){
   const amt=parseInt(document.getElementById("wdAmount").value);
   const det=document.getElementById("wdDetails").value;
-  if(!amt||!det) return alert("Fill withdraw fields");
-  await addDoc(collection(db,"requests"),{
-    user:currentUser,
-    type:"WITHDRAW",
-    amount:amt,
-    details:det,
-    status:"pending",
-    time:Date.now()
-  });
-  alert("Withdraw Request Sent");
+  if(!amt||!det)return alert("Fill all fields");
+  await addDoc(collection(db,"requests"),{user:currentUser,type:"WITHDRAW",amount:amt,details:det,status:"pending",time:Date.now()});
+  alert("Withdraw request sent!");
 }
 
-// Secret Admin Trigger
+// Promo code
+window.applyPromo=async function(){
+  if(promoApplied)return alert("Already applied code");
+  const code=document.getElementById("promoCode").value.trim();
+  if(!code)return alert("Enter code");
+  await addDoc(collection(db,"requests"),{user:currentUser,type:"PROMO",code:code,status:"pending",time:Date.now()});
+  alert("Promo code request sent!");
+}
+
+// Secret Admin
 document.getElementById("siteTitle").addEventListener("click",()=>{
   adminClicks++;
   if(adminClicks>=4){
-    const key = prompt("Enter Admin Key");
-    if(key==="mint786"){
-      document.getElementById("adminBox").style.display="block";
-    } else alert("Wrong Key");
+    const key=prompt("Enter Admin Key");
+    if(key==="mint786")document.getElementById("adminBox").classList.remove("hidden");
+    else alert("Wrong key");
     adminClicks=0;
   }
 });
 
-// Admin Approve/Reject Requests
-window.approve = async function(id,user,type,amount,planName,dailyProfit){
-  const userRef=doc(db,"users",user);
-  const docSnap=await getDoc(userRef);
-  const d=docSnap.data();
-  if(type==="DEPOSIT"){await setDoc(userRef,{...d,balance:d.balance+amount},{merge:true});}
-  if(type==="WITHDRAW"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount},{merge:true});}
-  if(type==="PLAN"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount,activePlan:planName,planExpiry:Date.now()+24*60*60*1000,lastProfit:dailyProfit},{merge:true});}
-  await setDoc(doc(db,"requests",id),{status:"approved"},{merge:true});
-}
-window.reject=async function(id){await setDoc(doc(db,"requests",id),{status:"rejected"},{merge:true});}
-
-// Profit Countdown
-function startProfitCountdown(expiry,lastProfit){
-  clearInterval(window.profitInterval);
-  if(!expiry) return;
-  const bar = document.getElementById("profitBar");
-  window.profitInterval=setInterval(()=>{
-    const diff = expiry - Date.now();
-    if(diff<=0){document.getElementById("profitCountdown").innerText="Next Profit Ready!"; bar.style.width="100%"; clearInterval(window.profitInterval); return;}
-    let h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000), s=Math.floor((diff%60000)/1000);
-    document.getElementById("profitCountdown").innerText=`Next Profit in ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    bar.style.width=`${100-(diff/86400000)*100}%`;
-  },1000);
-}
-
-// Broadcast / Promo Code
+// Broadcast sync
 async function syncBroadcast(){
-  const docRef = doc(db,"settings","broadcast");
-  onSnapshot(docRef,docSnap=>{
-    if(docSnap.exists()){
-      const msg=docSnap.data().msg;
-      if(msg&&!promoCodeApplied){
-        alert("🎉 New Promo Code: "+msg+" | Apply in your dashboard!");
-      }
-    }
+  const ref=doc(db,"settings","broadcast");
+  onSnapshot(ref,docSnap=>{
+    if(docSnap.exists()&&!promoApplied)alert("🎉 Promo/Message: "+docSnap.data().msg);
   });
 }
-window.applyPromo = async function(){
-  if(promoCodeApplied) return alert("Already redeemed a code");
-  const code = document.getElementById("promoCode").value.trim();
-  if(!code) return alert("Enter code");
-  await addDoc(collection(db,"requests"),{
-    user:currentUser,
-    type:"PROMO",
-    code:code,
-    status:"pending",
-    time:Date.now()
+
+// Activity section
+async function loadActivity(){
+  const q=query(collection(db,"requests"),where("user","==",currentUser),orderBy("time","desc"));
+  onSnapshot(q,snap=>{
+    const container=document.getElementById("activityList");
+    container.innerHTML="";
+    snap.forEach(d=>{
+      const r=d.data();
+      const div=document.createElement("div");
+      div.className="bg-white/5 rounded-xl p-2 mb-1 flex justify-between text-xs";
+      div.innerHTML=`<span>${r.type}${r.planName?": "+r.planName:""}<br><span class="opacity-50">${new Date(r.time).toLocaleString()}</span></span><span class="${r.status==='approved'?'text-green-400':'text-yellow-400'}">${r.status}</span>`;
+      container.appendChild(div);
+    });
   });
-  alert("Promo Code Request Sent to Admin");
 }
 
 // Navigation
 window.showPage=function(page,btn){
-  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-  document.getElementById("page-"+page).style.display="block";
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active-nav"));
-  btn.classList.add("active-nav");
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  document.getElementById("page-"+page).classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("text-blue-500"));
+  btn.classList.add("text-blue-500");
 }
 </script>
-
-<style>
-body{font-family:sans-serif;background:#0f172a;color:white;margin:0;padding-bottom:80px;}
-.card{background:rgba(255,255,255,0.05);padding:16px;border-radius:12px;margin-bottom:12px;transition:0.3s;}
-.card:hover{transform:scale(1.02);box-shadow:0 4px 12px rgba(0,0,0,0.5);}
-button{padding:8px 12px;border-radius:8px;font-weight:bold;cursor:pointer;}
-button:hover{opacity:0.9;}
-.progress-bar{height:6px;background:#3b82f6;border-radius:3px;margin-top:4px;transition:width 0.5s;}
-.nav-btn{flex:1;text-align:center;padding:10px;font-size:18px;color:#9ca3af;}
-.active-nav{color:#3b82f6;transform:scale(1.1);}
-input,select{width:100%;padding:8px;margin-top:4px;margin-bottom:8px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:white;}
-</style>
 </head>
-<body>
+<body class="bg-gray-900 text-white font-sans">
 
 <!-- Login -->
-<div id="loginBox" class="max-w-sm mx-auto mt-20">
-  <div class="card text-center">
-    <h1 id="siteTitle" class="text-3xl font-bold mb-4 cursor-pointer">MINTCRESTGOLD</h1>
-    <input id="username" placeholder="Username">
-    <button onclick="login()" class="bg-blue-600 w-full mt-2">Login</button>
-  </div>
+<div id="loginBox" class="max-w-sm mx-auto mt-16 p-4">
+  <h1 id="siteTitle" class="text-3xl font-bold text-center mb-4 cursor-pointer">MINTCRESTGOLD</h1>
+  <input id="username" placeholder="Username" class="w-full p-3 rounded-xl mb-2 bg-white/10 text-white">
+  <button onclick="login()" class="w-full bg-blue-600 p-3 rounded-xl font-bold">Login</button>
 </div>
 
 <!-- App Dashboard -->
-<div id="appBox" class="max-w-md mx-auto space-y-4 hidden">
+<div id="appBox" class="hidden max-w-md mx-auto space-y-4 p-4">
 
+<!-- Wallet -->
 <div class="page" id="page-home">
-  <div class="card text-center">
-    <h2 class="text-sm text-gray-400">Wallet Balance</h2>
+  <div class="bg-white/5 rounded-2xl p-4 text-center mb-3">
+    <h2 class="text-gray-400 text-sm">Wallet Balance</h2>
     <h1 id="balance" class="text-2xl font-bold mt-1">₨ 0</h1>
-    <p id="activePlan" class="text-xs text-yellow-400 mt-1"></p>
-    <p id="profitCountdown" class="text-xs text-green-400 mt-1"></p>
-    <div class="w-full bg-gray-600 rounded-full h-2 mt-1"><div class="progress-bar" id="profitBar"></div></div>
-    <button onclick="claimGift()" class="bg-green-600 mt-2 w-full">🎁 Claim Gift</button>
+    <p id="activePlan" class="text-yellow-400 text-xs mt-1"></p>
   </div>
 
-  <div class="card">
+  <!-- Deposit -->
+  <div class="bg-white/5 rounded-2xl p-4 mb-3">
     <h3 class="font-bold mb-2">💳 Deposit</h3>
-    <input id="depAmount" type="number" placeholder="Amount">
-    <select id="depMethod">
-      <option value="">Select Payment Method</option>
-      <option value="JazzCash 03705519562">JazzCash 03705519562</option>
-      <option value="Easypaisa 03379827882">Easypaisa 03379827882</option>
-      <option value="SadaPay 03705519562">SadaPay 03705519562</option>
+    <input id="depAmount" placeholder="Amount" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <select id="depMethod" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+      <option value="">Select Method</option>
+      <option>JazzCash 03705519562</option>
+      <option>Easypaisa 03379827882</option>
+      <option>SadaPay 03705519562</option>
     </select>
-    <input id="depTid" type="text" placeholder="Transaction ID">
-    <input id="depProof" type="file" accept="image/*">
-    <button onclick="deposit()" class="bg-green-600 mt-2 w-full">Send Deposit Request</button>
+    <input id="depTid" placeholder="Transaction ID" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <button onclick="deposit()" class="w-full bg-green-600 p-2 rounded-xl">Send Deposit</button>
   </div>
 
-  <div class="card">
+  <!-- Withdraw -->
+  <div class="bg-white/5 rounded-2xl p-4 mb-3">
     <h3 class="font-bold mb-2">🏦 Withdraw</h3>
-    <input id="wdAmount" type="number" placeholder="Amount">
-    <input id="wdDetails" type="text" placeholder="Account Details">
-    <button onclick="withdraw()" class="bg-red-600 mt-2 w-full">Send Withdraw Request</button>
+    <input id="wdAmount" placeholder="Amount" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <input id="wdDetails" placeholder="Account Details" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <button onclick="withdraw()" class="w-full bg-red-600 p-2 rounded-xl">Send Withdraw</button>
   </div>
 
-  <div class="card">
-    <h3 class="font-bold mb-2">⚡ Plans / Nodes</h3>
-    <div id="plans"></div>
+  <!-- Plans -->
+  <div class="bg-white/5 rounded-2xl p-4 mb-3">
+    <h3 class="font-bold mb-2">⚡ Plans</h3>
+    <div id="plans" class="space-y-2"></div>
   </div>
 
-  <div class="card">
+  <!-- Promo -->
+  <div class="bg-white/5 rounded-2xl p-4 mb-3">
     <h3 class="font-bold mb-2">🎁 Promo Code</h3>
-    <input id="promoCode" placeholder="Enter Promo Code">
-    <button onclick="applyPromo()" class="bg-purple-600 mt-2 w-full">Apply Code</button>
+    <input id="promoCode" placeholder="Enter Code" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <button onclick="applyPromo()" class="w-full bg-purple-600 p-2 rounded-xl">Apply</button>
   </div>
 
-</div>
-
-<!-- Bottom Nav -->
-<div class="fixed bottom-0 left-0 right-0 flex bg-black/90">
-<button class="nav-btn active-nav" onclick="showPage('home',this)">🏠</button>
-<button class="nav-btn" onclick="showPage('plans',this)">⚡</button>
-<button class="nav-btn" onclick="showPage('activity',this)">📜</button>
-<button class="nav-btn" onclick="showPage('help',this)">⚙️</button>
+  <!-- Activity -->
+  <div class="bg-white/5 rounded-2xl p-4 mb-3">
+    <h3 class="font-bold mb-2">📜 Activity</h3>
+    <div id="activityList" class="space-y-1"></div>
+  </div>
 </div>
 
 <!-- Admin Panel -->
-<div id="adminBox" class="hidden fixed inset-0 bg-black p-4 overflow-auto"></div>
+<div id="adminBox" class="hidden fixed inset-0 bg-black/95 p-4 overflow-auto z-50 text-white"></div>
+
+<!-- Bottom Nav -->
+<div class="fixed bottom-0 left-0 right-0 flex justify-around bg-black/90 p-3">
+  <button class="nav-btn text-blue-500" onclick="showPage('home',this)">🏠 Home</button>
+  <button class="nav-btn" onclick="showPage('plans',this)">⚡ Plans</button>
+  <button class="nav-btn" onclick="showPage('activity',this)">📜 Activity</button>
+  <button class="nav-btn" onclick="showPage('help',this)">⚙️ Support</button>
+</div>
 
 </body>
 </html>

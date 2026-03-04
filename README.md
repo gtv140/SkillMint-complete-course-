@@ -6,8 +6,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, orderBy, where, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDt3ChZHyDdtM4Ir1oXRZJUywcOiV30Wtg",
   authDomain: "investment-84f4e.firebaseapp.com",
@@ -19,8 +20,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Variables
 let currentUser=null, adminClicks=0, promoApplied=false;
-const plans=[]; for(let i=1;i<=20;i++) plans.push({name:"Plan "+i,price:200*i,daily:3+(i*0.2)});
+const plans=[];
+for(let i=1;i<=25;i++){
+  plans.push({name:`Plan ${i}`,price:(i<=20?200*i:(i-20)*2000),daily:3+(i*0.2)});
+}
 
 // LOGIN
 window.login=async function(){
@@ -30,7 +35,7 @@ window.login=async function(){
   const uRef=doc(db,"users",name);
   const uSnap=await getDoc(uRef);
   if(!uSnap.exists()){
-    await setDoc(uRef,{balance:0,activePlan:null,lastProfit:0,redeemedCodes:[]});
+    await setDoc(uRef,{balance:0,activePlan:null,lastProfit:0,redeemedCodes:[],pin:"0000"});
   }
   document.getElementById("loginBox").classList.add("hidden");
   document.getElementById("appBox").classList.remove("hidden");
@@ -80,8 +85,14 @@ window.deposit=async function(){
 window.withdraw=async function(){
   const amt=parseInt(document.getElementById("wdAmount").value);
   const det=document.getElementById("wdDetails").value;
+  const pin=document.getElementById("wdPin").value;
+  const uRef=doc(db,"users",currentUser);
+  const uSnap=await getDoc(uRef);
+  if(amt>uSnap.data().balance) return alert("Insufficient balance");
+  if(pin!==uSnap.data().pin) return alert("Wrong PIN");
   if(!amt||!det) return alert("Fill all fields");
   await addDoc(collection(db,"requests"),{user:currentUser,type:"WITHDRAW",amount:amt,details:det,status:"pending",time:Date.now()});
+  await updateDoc(uRef,{balance:uSnap.data().balance-amt});
   alert("Withdraw request sent!");
 }
 
@@ -134,7 +145,7 @@ window.showPage=function(page,btn){
   document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
   document.getElementById("page-"+page).classList.remove("hidden");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("text-blue-500"));
-  btn.classList.add("text-blue-500");
+  if(btn) btn.classList.add("text-blue-500");
 }
 </script>
 </head>
@@ -176,6 +187,7 @@ window.showPage=function(page,btn){
     <h3 class="font-bold mb-2">🏦 Withdraw</h3>
     <input id="wdAmount" placeholder="Amount" class="w-full p-2 rounded-xl mb-2 bg-white/10">
     <input id="wdDetails" placeholder="Account Details" class="w-full p-2 rounded-xl mb-2 bg-white/10">
+    <input id="wdPin" placeholder="PIN" type="password" class="w-full p-2 rounded-xl mb-2 bg-white/10">
     <button onclick="withdraw()" class="w-full bg-red-600 p-2 rounded-xl">Send Withdraw</button>
   </div>
 
@@ -200,7 +212,10 @@ window.showPage=function(page,btn){
 </div>
 
 <!-- Admin Panel -->
-<div id="adminBox" class="hidden fixed inset-0 bg-black/95 p-4 overflow-auto z-50 text-white"></div>
+<div id="adminBox" class="hidden fixed inset-0 bg-black/95 p-4 overflow-auto z-50 text-white">
+  <h2 class="text-xl font-bold mb-4">Admin Panel</h2>
+  <p>Approve/Reject Requests, Broadcast Messages, Set Promo Codes</p>
+</div>
 
 <!-- Bottom Nav -->
 <div class="fixed bottom-0 left-0 right-0 flex justify-around bg-black/90 p-3">

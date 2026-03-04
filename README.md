@@ -2,7 +2,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MINTCRESTGOLD | Live Dashboard</title>
+<title>MINTCRESTGOLD | Dashboard</title>
+
+<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -23,8 +25,9 @@ const storage = getStorage(app);
 
 let currentUser = null;
 let adminClicks = 0;
+let promoCodeApplied = false;
 
-// Plans
+// Plans setup
 const plans = [];
 for(let i=1;i<=20;i++) plans.push({name:"Starter "+i,price:i*200,dailyProfit:3+(i*0.2)});
 plans.push({name:"Elite 1",price:5000,dailyProfit:10});
@@ -39,12 +42,13 @@ window.login = async function(){
   const userRef = doc(db,"users",name);
   const docSnap = await getDoc(userRef);
   if(!docSnap.exists()){
-    await setDoc(userRef,{balance:0,activePlan:null,planExpiry:null,lastProfit:0,referrals:0});
+    await setDoc(userRef,{balance:0,activePlan:null,planExpiry:null,lastProfit:0,referrals:0,redeemedCodes:[]});
   }
   document.getElementById("loginBox").style.display="none";
   document.getElementById("appBox").style.display="block";
   loadUserData();
   renderPlans();
+  syncBroadcast();
 };
 
 // Load user data
@@ -55,10 +59,11 @@ async function loadUserData(){
     document.getElementById("balance").innerText="₨ "+data.balance;
     document.getElementById("activePlan").innerText=data.activePlan?`Active: ${data.activePlan} | Expiry: ${new Date(data.planExpiry).toLocaleDateString()}`:"No Active Plan";
     startProfitCountdown(data.planExpiry,data.lastProfit);
+    promoCodeApplied = data.redeemedCodes && data.redeemedCodes.length>0;
   });
 }
 
-// Render plans
+// Render Plans
 window.renderPlans = function(){
   const container = document.getElementById("plans");
   container.innerHTML = "";
@@ -70,7 +75,7 @@ window.renderPlans = function(){
   });
 }
 
-// Buy plan request
+// Buy Plan
 window.buyPlan=async function(name,price,dailyProfit){
   await addDoc(collection(db,"requests"),{
     user:currentUser,
@@ -135,19 +140,19 @@ document.getElementById("siteTitle").addEventListener("click",()=>{
   }
 });
 
-// Admin approve/reject
+// Admin Approve/Reject Requests
 window.approve = async function(id,user,type,amount,planName,dailyProfit){
   const userRef=doc(db,"users",user);
   const docSnap=await getDoc(userRef);
   const d=docSnap.data();
-  if(type==="DEPOSIT"){await setDoc(userRef,{...d,balance:d.balance+amount});}
-  if(type==="WITHDRAW"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount});}
-  if(type==="PLAN"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount,activePlan:planName,planExpiry:Date.now()+24*60*60*1000,lastProfit:dailyProfit});}
+  if(type==="DEPOSIT"){await setDoc(userRef,{...d,balance:d.balance+amount},{merge:true});}
+  if(type==="WITHDRAW"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount},{merge:true});}
+  if(type==="PLAN"){if(d.balance<amount)return alert("Low balance"); await setDoc(userRef,{...d,balance:d.balance-amount,activePlan:planName,planExpiry:Date.now()+24*60*60*1000,lastProfit:dailyProfit},{merge:true});}
   await setDoc(doc(db,"requests",id),{status:"approved"},{merge:true});
 }
 window.reject=async function(id){await setDoc(doc(db,"requests",id),{status:"rejected"},{merge:true});}
 
-// Profit countdown
+// Profit Countdown
 function startProfitCountdown(expiry,lastProfit){
   clearInterval(window.profitInterval);
   if(!expiry) return;
@@ -161,6 +166,32 @@ function startProfitCountdown(expiry,lastProfit){
   },1000);
 }
 
+// Broadcast / Promo Code
+async function syncBroadcast(){
+  const docRef = doc(db,"settings","broadcast");
+  onSnapshot(docRef,docSnap=>{
+    if(docSnap.exists()){
+      const msg=docSnap.data().msg;
+      if(msg&&!promoCodeApplied){
+        alert("🎉 New Promo Code: "+msg+" | Apply in your dashboard!");
+      }
+    }
+  });
+}
+window.applyPromo = async function(){
+  if(promoCodeApplied) return alert("Already redeemed a code");
+  const code = document.getElementById("promoCode").value.trim();
+  if(!code) return alert("Enter code");
+  await addDoc(collection(db,"requests"),{
+    user:currentUser,
+    type:"PROMO",
+    code:code,
+    status:"pending",
+    time:Date.now()
+  });
+  alert("Promo Code Request Sent to Admin");
+}
+
 // Navigation
 window.showPage=function(page,btn){
   document.querySelectorAll(".page").forEach(p=>p.style.display="none");
@@ -169,6 +200,7 @@ window.showPage=function(page,btn){
   btn.classList.add("active-nav");
 }
 </script>
+
 <style>
 body{font-family:sans-serif;background:#0f172a;color:white;margin:0;padding-bottom:80px;}
 .card{background:rgba(255,255,255,0.05);padding:16px;border-radius:12px;margin-bottom:12px;transition:0.3s;}
@@ -179,7 +211,6 @@ button:hover{opacity:0.9;}
 .nav-btn{flex:1;text-align:center;padding:10px;font-size:18px;color:#9ca3af;}
 .active-nav{color:#3b82f6;transform:scale(1.1);}
 input,select{width:100%;padding:8px;margin-top:4px;margin-bottom:8px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;color:white;}
-img{max-width:100%;border-radius:8px;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -217,7 +248,6 @@ img{max-width:100%;border-radius:8px;margin-top:4px;}
     </select>
     <input id="depTid" type="text" placeholder="Transaction ID">
     <input id="depProof" type="file" accept="image/*">
-    <div id="depPreview"></div>
     <button onclick="deposit()" class="bg-green-600 mt-2 w-full">Send Deposit Request</button>
   </div>
 
@@ -232,6 +262,13 @@ img{max-width:100%;border-radius:8px;margin-top:4px;}
     <h3 class="font-bold mb-2">⚡ Plans / Nodes</h3>
     <div id="plans"></div>
   </div>
+
+  <div class="card">
+    <h3 class="font-bold mb-2">🎁 Promo Code</h3>
+    <input id="promoCode" placeholder="Enter Promo Code">
+    <button onclick="applyPromo()" class="bg-purple-600 mt-2 w-full">Apply Code</button>
+  </div>
+
 </div>
 
 <!-- Bottom Nav -->

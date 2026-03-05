@@ -38,7 +38,6 @@
                 <input type="text" id="ref-by" placeholder="Referral Name (Optional)" class="w-full bg-white/5 p-4 rounded-xl border border-white/5 outline-none text-center text-[10px] mb-6 font-bold">
                 <button onclick="login()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all">Secure Access</button>
             </div>
-            <p class="mt-8 text-[7px] text-gray-600 uppercase font-bold tracking-widest">© 2026 MintCrest Gold Enterprise</p>
         </div>
     </section>
 
@@ -73,22 +72,26 @@
             <div class="glass p-8 rounded-[3rem] border-t-4 border-blue-500">
                 <h3 class="text-blue-500 font-black text-[11px] uppercase mb-2 text-center italic">Referral ID</h3>
                 <div id="my-ref-id" class="text-center font-black text-lg py-2 text-white">---</div>
-                <p class="text-[7px] text-center text-gray-500 uppercase">Share your name to earn 10% commission on referrals!</p>
+                <p class="text-[7px] text-center text-gray-500 uppercase">Share your name to earn 10% commission!</p>
             </div>
             <div class="glass p-8 rounded-[3rem] border-t-4 border-yellow-500">
                 <h3 class="text-yellow-500 font-black text-[11px] uppercase mb-2 text-center italic">Reward Center</h3>
                 <input type="text" id="promo-input" placeholder="Enter Promo Code..." class="w-full bg-white/5 p-4 rounded-2xl text-[10px] border border-white/10 outline-none mb-4 text-center font-bold uppercase">
                 <button onclick="applyPromoRequest()" class="w-full bg-yellow-600 py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">Submit Code</button>
             </div>
+            <div class="glass p-8 rounded-[3rem] text-center border-b-4 border-green-500">
+                <h3 class="text-green-500 font-black text-[10px] uppercase mb-2">Official Community</h3>
+                <a href="https://chat.whatsapp.com/EbfTbr66JQLFEmjnxrReE3" class="inline-block bg-white/5 border border-green-500/30 px-8 py-3 rounded-2xl font-black text-[9px] uppercase tracking-widest">📢 Join Group</a>
+            </div>
             <button onclick="logout()" class="w-full glass p-6 rounded-[2.5rem] text-center text-[10px] font-black text-red-500 uppercase">Terminate Session</button>
         </div>
 
         <div id="p-wallet" class="page p-6">
             <div class="glass p-10 rounded-[3.5rem] text-center border-t-8 border-blue-600 shadow-2xl">
-                <h3 class="font-black text-blue-500 mb-8 uppercase text-sm italic tracking-widest">Capital Funding</h3>
-                <div class="space-y-3 mb-10 text-[10px] font-black">
-                    <div class="glass p-5 rounded-2xl flex justify-between bg-blue-500/5"><span>JAZZCASH/SADAPAY</span><span class="text-blue-400">03705519562</span></div>
-                    <div class="glass p-5 rounded-2xl flex justify-between bg-green-500/5"><span>EASYPAISA</span><span class="text-green-400">03379827882</span></div>
+                <h3 class="font-black text-blue-500 mb-8 uppercase text-sm italic">Capital Funding</h3>
+                <div class="space-y-3 mb-10 text-[10px] font-black text-left">
+                    <div class="glass p-5 rounded-2xl flex justify-between"><span>JAZZCASH/SADAPAY</span><span class="text-blue-400">03705519562</span></div>
+                    <div class="glass p-5 rounded-2xl flex justify-between"><span>EASYPAISA</span><span class="text-green-400">03379827882</span></div>
                 </div>
                 <input type="number" id="dep-amount" placeholder="Amount (PKR)" class="w-full bg-white/5 p-5 rounded-2xl mb-3 text-center font-bold outline-none border border-white/5">
                 <input type="text" id="dep-trx" placeholder="TID (Transaction ID)" class="w-full bg-white/5 p-5 rounded-2xl mb-3 text-center font-bold uppercase outline-none border border-white/5">
@@ -96,7 +99,7 @@
                     <span id="file-label" class="text-[9px] font-bold opacity-50 uppercase italic">📸 Upload Screenshot Proof</span>
                     <input type="file" id="dep-proof" accept="image/*" class="hidden" onchange="document.getElementById('file-label').innerText = 'Screenshot Ready ✅'">
                 </label>
-                <button id="dep-btn" onclick="submitDeposit()" class="w-full bg-blue-600 py-6 rounded-2xl font-black text-[10px] uppercase shadow-lg">Verify Funding</button>
+                <button onclick="submitDeposit()" class="w-full bg-blue-600 py-6 rounded-2xl font-black text-[10px] uppercase shadow-lg">Verify Funding</button>
             </div>
         </div>
 
@@ -136,33 +139,33 @@
         <div id="adm-sec-requests" class="adm-tab space-y-3"></div>
 
         <div id="adm-sec-users" class="adm-tab hidden space-y-3">
-            <input type="text" id="user-search" oninput="filterUsers()" placeholder="Search User Name..." class="w-full bg-white/5 p-4 rounded-xl mb-4 text-[10px] font-bold border border-white/10 outline-none">
+            <input type="text" id="user-search" oninput="filterUsers()" placeholder="Search User..." class="w-full bg-white/5 p-4 rounded-xl mb-4 text-[10px] font-bold border border-white/10 outline-none">
             <div id="user-list-container" class="space-y-3"></div>
         </div>
 
         <div id="adm-sec-control" class="adm-tab hidden space-y-4">
-            <div class="glass p-8 rounded-[3rem] border-t-4 border-yellow-500">
-                <h3 class="text-yellow-400 font-black text-[10px] uppercase mb-4 text-center italic">Ticker Message</h3>
-                <textarea id="bc-msg" placeholder="Write Promo News..." class="w-full bg-white/5 p-4 rounded-2xl text-[10px] border border-white/10 outline-none h-20 mb-3"></textarea>
-                <button onclick="sendBroadcast()" class="w-full bg-yellow-600 py-3 rounded-xl font-black text-[9px] uppercase">Update Ticker</button>
+            <div class="glass p-8 rounded-[3rem] border-t-4 border-yellow-500 text-center">
+                <h3 class="text-yellow-400 font-black text-[10px] uppercase mb-4">Broadcast Message</h3>
+                <textarea id="bc-msg" class="w-full bg-white/5 p-4 rounded-2xl text-[10px] border border-white/10 outline-none mb-3"></textarea>
+                <button onclick="sendBroadcast()" class="w-full bg-yellow-600 py-3 rounded-xl font-black text-[9px] uppercase">Update App Ticker</button>
             </div>
             <div class="glass p-8 rounded-[3rem] border-t-4 border-blue-600">
-                <h3 class="text-blue-500 font-black text-[10px] uppercase mb-4 text-center italic">Manual Injection</h3>
+                <h3 class="text-blue-500 font-black text-[10px] uppercase mb-4 text-center">Manual Fund Control</h3>
                 <input type="text" id="adm-user" placeholder="User Name" class="w-full bg-white/5 p-4 rounded-xl mb-2 text-center text-[10px] font-bold border border-white/5 outline-none">
                 <input type="number" id="adm-val" placeholder="Amount" class="w-full bg-white/5 p-4 rounded-xl mb-4 text-center text-[10px] font-bold border border-white/5 outline-none text-white">
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="manualEdit('balance', 1)" class="bg-blue-600 py-3 rounded-xl font-black text-[9px] uppercase">Add Bal</button>
-                    <button onclick="manualEdit('balance', -1)" class="bg-red-600 py-3 rounded-xl font-black text-[9px] uppercase">Minus Bal</button>
+                    <button onclick="manualEdit('balance', 1)" class="bg-blue-600 py-3 rounded-xl font-black text-[9px] uppercase">Add</button>
+                    <button onclick="manualEdit('balance', -1)" class="bg-red-600 py-3 rounded-xl font-black text-[9px] uppercase">Minus</button>
                 </div>
             </div>
         </div>
     </div>
 
     <nav id="bottom-nav" class="hidden glass border-t border-white/5 p-8 flex justify-around items-center fixed bottom-0 left-0 w-full z-[200] rounded-t-[4rem] shadow-2xl">
-        <button onclick="changePage('home')" id="n-home" class="flex flex-col items-center gap-2 active-tab">🏠<span class="text-[8px] font-black uppercase mt-1">Vault</span></button>
-        <button onclick="changePage('invest')" id="n-invest" class="flex flex-col items-center gap-2">📈<span class="text-[8px] font-black uppercase mt-1">Fleet</span></button>
-        <button onclick="changePage('activity')" id="n-activity" class="flex flex-col items-center gap-2">📜<span class="text-[8px] font-black uppercase mt-1">Ledger</span></button>
-        <button onclick="changePage('more')" id="n-more" class="flex flex-col items-center gap-2">🏢<span class="text-[8px] font-black uppercase mt-1">Firm</span></button>
+        <button onclick="changePage('home')" id="n-home" class="flex flex-col items-center gap-2 active-tab">🏠<span class="text-[8px] font-black uppercase">Vault</span></button>
+        <button onclick="changePage('invest')" id="n-invest" class="flex flex-col items-center gap-2">📈<span class="text-[8px] font-black uppercase">Fleet</span></button>
+        <button onclick="changePage('activity')" id="n-activity" class="flex flex-col items-center gap-2">📜<span class="text-[8px] font-black uppercase">Ledger</span></button>
+        <button onclick="changePage('more')" id="n-more" class="flex flex-col items-center gap-2">🏢<span class="text-[8px] font-black uppercase">Firm</span></button>
     </nav>
 
     <script>
@@ -188,10 +191,10 @@
             const saved = localStorage.getItem('mc_user'); 
             if(saved) { document.getElementById('user-name').value = saved; login(); }
             setInterval(updateCountdown, 1000); 
-            listenForPromos();
+            listenForAppUpdates();
         };
 
-        function listenForPromos() {
+        function listenForAppUpdates() {
             db.collection("app_data").doc("announcement").onSnapshot(doc => {
                 if(doc.exists) {
                     document.getElementById('promo-ticker').classList.remove('hidden');
@@ -214,11 +217,11 @@
         function startSync(name) {
             db.collection("users").doc(name).onSnapshot(doc => { if(doc.exists) { user = doc.data(); document.getElementById('v-bal').innerText = "₨ " + (user.balance || 0).toLocaleString(); document.getElementById('v-profit').innerText = "₨ " + (user.profit || 0).toLocaleString(); document.getElementById('tier-tag').innerText = user.tierName; checkProfitReq(user); } });
             db.collection("requests").where("user", "==", name).onSnapshot(snap => {
-                const list = document.getElementById('user-history'); list.innerHTML = snap.empty ? '<p class="text-center opacity-20 py-20 text-[9px] font-black uppercase italic">Ledger is Empty</p>' : '';
+                const list = document.getElementById('user-history'); list.innerHTML = snap.empty ? '<p class="text-center opacity-20 py-20 text-[9px] font-black uppercase italic">No Activities</p>' : '';
                 let items = []; snap.forEach(doc => items.push(doc.data())); items.sort((a,b) => b.time - a.time);
                 items.forEach(d => { 
-                    const clr = d.type.includes('dep') ? 'border-blue-500' : (d.type.includes('Profit') ? 'border-green-500' : (d.type.includes('Ref') ? 'border-yellow-500' : 'border-red-500')); 
-                    list.innerHTML += `<div class="glass p-5 rounded-3xl flex justify-between items-center border-l-4 ${clr} mb-2 text-[9px] font-black uppercase"><div>${d.type}<br><span class="opacity-30 text-[7px] font-bold">${new Date(d.time).toLocaleString()}</span></div><div class="text-right">₨ ${d.amount}<br><span class="badge-${d.status}">${d.status}</span></div></div>`; 
+                    const clr = d.type.includes('dep') ? 'border-blue-500' : (d.type.includes('Profit') ? 'border-green-500' : (d.type.includes('Promo') ? 'border-yellow-500' : 'border-red-500')); 
+                    list.innerHTML += `<div class="glass p-5 rounded-3xl flex justify-between items-center border-l-4 ${clr} mb-2 text-[9px] font-black uppercase"><div>${d.type}<br><span class="opacity-30 text-[7px]">${new Date(d.time).toLocaleString()}</span></div><div class="text-right">₨ ${d.amount}<br><span class="badge-${d.status}">${d.status}</span></div></div>`; 
                 });
             });
         }
@@ -235,15 +238,21 @@
             const a = document.getElementById('dep-amount').value; const t = document.getElementById('dep-trx').value; const f = document.getElementById('dep-proof');
             if(!a || !t || !f.files[0]) return alert("Missing Details!");
             const r = new FileReader(); r.readAsDataURL(f.files[0]); r.onload = async () => {
-                await db.collection("requests").add({ user: user.name, amount: parseInt(a), tid: t, proof: r.result, type: "deposit", status: "pending", time: Date.now(), referredBy: user.referredBy || "Direct" });
-                alert("Request Logged, Sweetie!"); changePage('activity');
+           await db.collection("requests").add({ user: user.name, amount: parseInt(a), tid: t, proof: r.result, type: "deposit", status: "pending", time: Date.now(), referredBy: user.referredBy || "Direct" });
+                alert("Deposit Requested, Sweetie!"); changePage('activity');
             };
         }
 
         async function submitWithdraw() {
-            const a = document.getElementById('wd-amt').value; const acc = document.getElementById('wd-acc').value; if(!a || !acc || parseInt(a) > user.balance) return alert("Invalid Amount!");
+            const a = document.getElementById('wd-amt').value; const acc = document.getElementById('wd-acc').value; if(!a || !acc || parseInt(a) > user.balance) return alert("Invalid Request!");
             await db.collection("requests").add({ user: user.name, amount: parseInt(a), acc: acc, type: "withdraw", status: "pending", time: Date.now() });
             await db.collection("users").doc(user.name).update({ balance: user.balance - parseInt(a) }); alert("Requested!"); changePage('activity');
+        }
+
+        async function applyPromoRequest() {
+            const code = document.getElementById('promo-input').value.trim(); if(!code) return;
+            await db.collection("requests").add({ user: user.name, amount: 0, type: "Promo Request: "+code, status: "pending", time: Date.now() });
+            alert("Promo Submitted!");
         }
 
         async function buy(p, roi, tName) {
@@ -258,11 +267,11 @@
         function updateCountdown() { if (user && user.activeTier > 0) { const d = (user.lastReqTime + 86400000) - Date.now(); if(d>0) { const h = Math.floor(d/3600000); const m = Math.floor((d%3600000)/60000); const s = Math.floor((d%60000)/1000); document.getElementById('countdown-display').innerText = `YIELD IN: ${h}H ${m}M ${s}S`; } else { document.getElementById('countdown-display').innerText = "YIELD READY"; } } else { document.getElementById('countdown-display').innerText = "SYSTEM IDLE"; } }
         function changePage(p) { document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active-page')); document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-tab')); document.getElementById('p-'+p).classList.add('active-page'); if(p!=='wallet'&&p!=='withdraw') document.getElementById('n-'+p).classList.add('active-tab'); }
         function logout() { localStorage.removeItem('mc_user'); location.reload(); }
-        function adminTap() { tapCount++; if(tapCount >= 4) { if(prompt("Access Key:") === "mint786") { document.getElementById('admin-panel').classList.remove('hidden'); syncAdmin(); } tapCount=0; } setTimeout(()=>tapCount=0,3000); }
+        function adminTap() { tapCount++; if(tapCount >= 4) { if(prompt("Key:") === "mint786") { document.getElementById('admin-panel').classList.remove('hidden'); syncAdmin(); } tapCount=0; } setTimeout(()=>tapCount=0,3000); }
         function closeAdmin() { document.getElementById('admin-panel').classList.add('hidden'); }
         function showAdmTab(t) { document.querySelectorAll('.adm-tab').forEach(s=>s.classList.add('hidden')); document.getElementById('adm-sec-'+t).classList.remove('hidden'); }
 
-        // --- ADMIN MASTER LOGIC ---
+        // --- MASTER ADMIN LOGIC ---
         async function syncAdmin() {
             db.collection("users").onSnapshot(snap => {
                 document.getElementById('adm-stat-users').innerText = snap.size;
@@ -276,9 +285,9 @@
                 const list = document.getElementById('adm-sec-requests'); list.innerHTML = '';
                 snap.forEach(doc => {
                     const d = doc.data(); let info = "";
-                    if(d.type === 'deposit') info = `<div class="mt-2 text-blue-400">TID: ${d.tid}</div><button onclick="viewProof('${d.proof}')" class="mt-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-lg text-[7px]">VIEW PROOF 📸</button>`;
+                    if(d.type === 'deposit') info = `<div class="mt-2 text-blue-400 font-bold">TID: ${d.tid}</div><button onclick="viewProof('${d.proof}')" class="mt-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-lg text-[7px]">VIEW PROOF 📸</button>`;
                     else if(d.type === 'withdraw') info = `<div class="mt-2 text-red-400 italic font-bold">ACC: ${d.acc}</div>`;
-                    list.innerHTML += `<div class="glass p-5 rounded-3xl border-l-4 ${d.type==='deposit'?'border-blue-500':'border-red-500'} mb-4"><div class="flex justify-between items-start"><div class="text-[9px] font-black uppercase">USER: ${d.user}<br>TYPE: ${d.type}<br><span class="text-lg">₨ ${d.amount}</span>${info}</div><div class="flex flex-col gap-2"><button onclick="handle('${doc.id}','${d.user}',${d.amount},'approved','${d.type}')" class="bg-green-600 px-4 py-2 rounded-xl text-[8px] font-black">YES</button><button onclick="handle('${doc.id}','${d.user}',${d.amount},'rejected','${d.type}')" class="bg-red-600 px-4 py-2 rounded-xl text-[8px] font-black">NO</button></div></div></div>`;
+                    list.innerHTML += `<div class="glass p-5 rounded-3xl border-l-4 ${d.type==='deposit'?'border-blue-500':'border-red-500'} mb-4"><div class="flex justify-between items-start"><div class="text-[9px] font-black uppercase">USER: ${d.user}<br>TYPE: ${d.type}<br><span class="text-lg">₨ ${d.amount}</span>${info}</div><div class="flex flex-col gap-2"><button onclick="handle('${doc.id}','${d.user}',${d.amount},'approved','${d.type}')" class="bg-green-600 px-4 py-2 rounded-xl text-[8px] font-black">APPROVE</button><button onclick="handle('${doc.id}','${d.user}',${d.amount},'rejected','${d.type}')" class="bg-red-600 px-4 py-2 rounded-xl text-[8px] font-black">REJECT</button></div></div></div>`;
                 });
             });
         }
@@ -288,17 +297,24 @@
             const reqRef = db.collection("requests").doc(id);
             const reqSnap = await reqRef.get();
             const reqData = reqSnap.data();
+            let finalAmt = amt;
 
             if(act==='approved') {
-                if(type==='deposit' || type.includes('Profit')) {
-                    await ref.update({ balance: (data.balance||0) + amt });
-                    // Referral Commission Logic (10%)
+                if(type.includes('Promo Request')) {
+                    const bonus = prompt("Enter Bonus Amount for this promo:");
+                    if(!bonus) return;
+                    finalAmt = parseInt(bonus);
+                }
+                
+                if(type==='deposit' || type.includes('Profit') || type.includes('Promo')) {
+                    await ref.update({ balance: (data.balance||0) + finalAmt });
+                    // Referral Commission
                     if(type==='deposit' && reqData.referredBy && reqData.referredBy !== "Direct") {
-                        const refUser = db.collection("users").doc(reqData.referredBy);
-                        const refDoc = await refUser.get();
-                        if(refDoc.exists) {
-                            const comm = amt * 0.10;
-                            await refUser.update({ balance: (refDoc.data().balance||0) + comm });
+                        const rUser = db.collection("users").doc(reqData.referredBy);
+                        const rDoc = await rUser.get();
+                        if(rDoc.exists) {
+                            const comm = finalAmt * 0.10;
+                            await rUser.update({ balance: (rDoc.data().balance||0) + comm });
                             await db.collection("requests").add({ user: reqData.referredBy, amount: comm, type: "Ref Commission from "+u, status: "approved", time: Date.now() });
                         }
                     }
@@ -306,7 +322,7 @@
             } else if(act==='rejected' && type==='withdraw') {
                 await ref.update({ balance: (data.balance||0) + amt });
             }
-            await reqRef.update({ status: act }); 
+            await reqRef.update({ status: act, amount: finalAmt }); 
         }
 
         async function manualEdit(field, mult) {
@@ -316,9 +332,9 @@
         }
 
         function filterUsers() { const q = document.getElementById('user-search').value.toLowerCase(); document.querySelectorAll('.user-card').forEach(c => c.style.display = c.dataset.name.toLowerCase().includes(q) ? 'flex' : 'none'); }
-        function viewProof(s) { const w = window.open(""); w.document.write(`<body style="margin:0;background:#000;display:flex;justify-content:center;"><img src="${s}" style="max-width:100%;height:auto;"></body>`); }
-        async function sendBroadcast() { const m = document.getElementById('bc-msg').value; await db.collection("app_data").doc("announcement").set({ message: m }); alert("Sent!"); }
-        async function deleteUser(n) { if(confirm("Delete "+n+"?")) await db.collection("users").doc(n).delete(); }
+        function viewProof(s) { const w = window.open(""); w.document.write(`<body style="margin:0;background:#000;display:flex;justify-content:center;"><img src="${s}" style="max-width:100%;"></body>`); }
+        async function sendBroadcast() { const m = document.getElementById('bc-msg').value; await db.collection("app_data").doc("announcement").set({ message: m }); alert("Broadcast Sent!"); }
+        async function deleteUser(n) { if(confirm("Delete user "+n+"?")) await db.collection("users").doc(n).delete(); }
     </script>
 </body>
 </html>

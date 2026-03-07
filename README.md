@@ -132,8 +132,15 @@
                         <button onclick="copyAddr('TTSxm4pBK26RB4vXaa3Uo3hqGa5HdhxBDR')" class="bg-yellow-500/10 text-yellow-500 px-4 py-1 rounded-full text-[7px] border border-yellow-500/20">Copy Address</button>
                     </div>
                 </div>
-                <input type="number" id="dep-amount" placeholder="Capital Amount" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center font-bold border border-white/10">
-                <input type="text" id="dep-trx" placeholder="TID / Hash Number" class="w-full bg-white/5 p-5 rounded-2xl mb-10 text-center font-bold uppercase border border-white/10">
+                <input type="number" id="dep-amount" placeholder="Amount" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center font-bold">
+                <input type="text" id="dep-trx" placeholder="TID Number" class="w-full bg-white/5 p-5 rounded-2xl mb-4 text-center font-bold uppercase">
+                <div class="mb-6 text-left">
+                    <p class="text-[9px] font-black text-blue-400 mb-2 uppercase">📸 Upload Proof Screenshot</p>
+                    <input type="file" id="dep-proof" accept="image/*" class="w-full text-[10px] text-gray-500">
+                </div>
+                <button id="btn-dep" onclick="submitDeposit()" class="w-full grad-main py-6 rounded-3xl font-black text-[11px] uppercase text-white shadow-xl">Submit Deposit</button>
+            </div>
+        </div>
                 <button onclick="submitDeposit()" class="w-full grad-blue py-6 rounded-3xl font-black text-[11px] uppercase text-white shadow-xl">Verify Capital</button>
             </div>
         </div>
@@ -292,21 +299,23 @@
         async function sendBroadcast() { const m = document.getElementById('bc-msg').value.trim(); await db.collection("app_data").doc("announcement").set({ message: m }); alert("Updated!"); }
 
         async function syncAdmin() {
-            db.collection("users").onSnapshot(s => document.getElementById('adm-total-users').innerText = s.size);
             db.collection("requests").where("status", "==", "pending").onSnapshot(snap => {
-                document.getElementById('adm-total-reqs').innerText = snap.size;
                 const list = document.getElementById('adm-sec-requests'); list.innerHTML = '';
                 snap.forEach(doc => { const d = doc.data(); 
-                    list.innerHTML += `<div class="glass p-6 rounded-3xl mb-4 border border-white/10">
+                    let taxText = d.type === 'withdrawal' ? `<p class="text-[8px] text-red-400 font-bold uppercase mt-1">PAYOUT AFTER TAX: ₨ ${d.amount * 0.9}</p>` : '';
+                    list.innerHTML += `<div class="glass p-6 rounded-3xl mb-4 border border-white/10 shadow-xl">
                         <div class="flex justify-between text-[10px] font-black uppercase mb-1"><span>${d.user}</span><span class="text-blue-400">₨ ${d.amount}</span></div>
-                        <div class="text-[7px] opacity-40 mb-4">${d.type} | ${d.tid||d.acc||''}</div>
+                        <div class="text-[7px] opacity-40 mb-2 font-bold uppercase tracking-widest">${d.type} ${d.acc ? '| To: '+d.acc : ''}</div>
+                        ${taxText}
+                        ${d.proof ? `<a href="${d.proof}" target="_blank" style="display: block; width: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); color: white; padding: 12px; border-radius: 15px; text-align: center; font-weight: 900; font-size: 9px; text-transform: uppercase; text-decoration: none; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">📸 VIEW PROOF</a>` : ''}
                         <div class="flex gap-2">
-                            <button onclick="handle('${doc.id}','${d.user}',${d.amount},'approved','${d.type}')" class="flex-1 grad-blue py-3 rounded-xl text-[8px] font-black uppercase text-white">Approve</button>
-                            <button onclick="handle('${doc.id}','${d.user}',${d.amount},'rejected','${d.type}')" class="flex-1 bg-red-600 py-3 rounded-xl text-[8px] font-black uppercase text-white">Reject</button>
+                            <button onclick="handle('${doc.id}','${d.user}',${d.amount},'approved','${d.type}')" class="flex-1 grad-main py-3 rounded-xl text-[8px] font-black uppercase text-white shadow-lg">Approve</button>
+                            <button onclick="handle('${doc.id}','${d.user}',${d.amount},'rejected','${d.type}')" class="flex-1 bg-red-600/20 border border-red-600/40 py-3 rounded-xl text-[8px] font-black uppercase text-red-500">Reject</button>
                         </div>
                     </div>`;
                 });
             });
+        }
             db.collection("users").onSnapshot(snap => { const list = document.getElementById('adm-sec-users'); list.innerHTML = ''; snap.forEach(doc => { const u = doc.data(); list.innerHTML += `<div class="glass p-4 rounded-2xl flex justify-between items-center text-[9px] font-black uppercase mb-2"><div>${u.name}<br>Bal: ${u.balance}</div><button onclick="deleteUser('${u.name}')" class="text-red-500">Del</button></div>`; }); });
             db.collection("support").onSnapshot(snap => { const list = document.getElementById('adm-sec-msg'); list.innerHTML = ''; snap.forEach(doc => { const m = doc.data(); list.innerHTML += `<div class="glass p-4 rounded-2xl text-[9px] mb-2 font-bold"><p class="text-blue-400 uppercase">${m.user}</p><p class="mt-1">${m.message}</p></div>`; }); });
         }

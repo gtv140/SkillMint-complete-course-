@@ -233,23 +233,59 @@
 
         // 20+5 PLANS SYSTEM
         function renderPlans() {
-            const list = document.getElementById('plans-list'); list.innerHTML = '';
-            for(let i=1; i<=25; i++) {
-                const isSpecial = i > 20;
-                const price = i * 1000;
-                const daily = (price * (isSpecial ? 0.15 : 0.08)).toFixed(0);
-                list.innerHTML += `
-                <div class="glass p-6 rounded-[2.5rem] border-l-4 ${isSpecial ? 'border-yellow-500' : 'border-blue-500'} relative overflow-hidden">
-                    ${isSpecial ? '<span class="absolute top-2 right-2 text-[7px] font-black bg-yellow-500 text-black px-2 py-1 rounded-full">SPECIAL</span>' : ''}
-                    <h4 class="font-black text-xs uppercase mb-1">${isSpecial ? 'Diamond Node P'+(i-20) : 'Fleet Node V'+i}</h4>
-                    <p class="text-[8px] opacity-50 mb-4">${isSpecial ? 'Unlimited Cycle' : 'Duration: '+(i+10)+' Days'}</p>
-                    <div class="flex justify-between items-center">
-                        <div class="text-[10px] font-black">₨ ${price} <span class="text-green-400 block text-[8px]">₨ ${daily}/Day</span></div>
-                        <button onclick="buyPlan(${price})" class="bg-white/10 px-6 py-3 rounded-xl text-[9px] font-black uppercase active:scale-90 transition-all">Buy Now</button>
-                    </div>
-                </div>`;
-            }
-        }
+    const list = document.getElementById('plans-list'); 
+    list.innerHTML = '';
+    
+    for(let i=1; i<=25; i++) {
+        const isSpecial = i > 20;
+        
+        // PRICE LOGIC: Plan 1 is 200, others increase by 500
+        let price = i === 1 ? 200 : (i * 500) - 300; 
+        if(isSpecial) price = (i-20) * 10000; 
+
+        // DAYS LOGIC: Short term for small plans, Long term for big ones
+        let days = 30; 
+        if(i <= 5) days = 15 + (i * 2); // 17, 19, 21... days
+        else if(i <= 15) days = 30 + i;  // 41, 42... days
+        else days = 60;                 // Max 60 days
+
+        // PROFIT LOGIC: 8% for normal, 12% for VIP
+        const daily = (price * (isSpecial ? 0.12 : 0.08)).toFixed(0);
+
+        list.innerHTML += `
+        <div class="glass p-6 rounded-[2.5rem] border-l-4 ${isSpecial ? 'border-yellow-500' : 'border-blue-500'} relative overflow-hidden mb-4 shadow-xl">
+            ${isSpecial ? '<span class="absolute top-0 right-0 bg-yellow-500 text-black text-[7px] font-black px-4 py-1 rounded-bl-2xl animate-pulse">LIFETIME VIP</span>' : ''}
+            
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h4 class="font-black text-xs uppercase tracking-tighter">${isSpecial ? 'Royal Infinity P'+(i-20) : 'Starter Fleet V'+i}</h4>
+                    <p class="text-[8px] opacity-60 italic font-bold">
+                        ${isSpecial ? 'No Expiry • High Yield' : 'Duration: ' + days + ' Working Days'}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[7px] opacity-40 font-black uppercase">Price</p>
+                    <span class="text-sm font-black text-white">₨ ${price.toLocaleString()}</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 bg-black/30 p-4 rounded-2xl border border-white/5">
+                <div>
+                    <p class="text-[7px] uppercase opacity-40 font-bold">Daily Income</p>
+                    <p class="text-[11px] font-black text-green-400">₨ ${daily}</p>
+                </div>
+                <div class="text-right border-l border-white/10 pl-2">
+                    <p class="text-[7px] uppercase opacity-40 font-bold">Total Payout</p>
+                    <p class="text-[11px] font-black text-cyan-400">₨ ${isSpecial ? 'Unlimited' : (daily * days).toLocaleString()}</p>
+                </div>
+            </div>
+
+            <button onclick="buyPlan(${price})" class="w-full mt-4 grad-main py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                Activate Node
+            </button>
+        </div>`;
+    }
+}
 
         async function buyPlan(p) {
             if(user.balance < p) return alert("Low Balance, Sweetie! 😘");
